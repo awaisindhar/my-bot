@@ -330,12 +330,22 @@ app.add_handler(MessageHandler(
     filters.TEXT & ~filters.COMMAND,  # Only handle non-command text messages
     receive_auth
 ))
+# --- Telegram Bot Setup ---
+app = Application.builder().token(TOKEN).build()
+
+# Handlers
+app.add_handler(CommandHandler("start", start))
+app.add_handler(CallbackQueryHandler(welcome, pattern="start_again"))
+# ... (all your handlers here) ...
+app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, receive_auth))
+
+# --- Flask Setup ---
 from flask import Flask, request
 import os
 
 flask_app = Flask(__name__)
 
-@app.post("/webhook")
+@flask_app.post("/webhook")
 async def webhook():
     update = Update.de_json(request.get_json(force=True), app.bot)
     await app.process_update(update)
