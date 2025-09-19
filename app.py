@@ -330,5 +330,21 @@ app.add_handler(MessageHandler(
     filters.TEXT & ~filters.COMMAND,  # Only handle non-command text messages
     receive_auth
 ))
+from flask import Flask, request
+import os
 
-app.run_polling()
+flask_app = Flask(__name__)
+
+@app.post("/webhook")
+async def webhook():
+    update = Update.de_json(request.get_json(force=True), app.bot)
+    await app.process_update(update)
+    return "OK"
+
+@flask_app.route("/")
+def home():
+    return "Bot is running!"
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    flask_app.run(host="0.0.0.0", port=port)
